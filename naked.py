@@ -4,15 +4,29 @@ import datetime
 import time
 import yaml
 from configparser import ConfigParser
+import logging
+import logging.config
 
 
 
 
 from datetime import datetime
-print('Asteroid processing service')
+
+# Loading logging configuration
+with open('./log_worker.yaml', 'r') as stream:
+     log_config = yaml.safe_load(stream)
+
+logging.config.dictConfig(log_config)
+
+# Creating logger
+logger = logging.getLogger('root')
+
+
+
+logger.info('Asteroid processing service')
 
 # Initiating and reading config values
-print('Loading configuration from file')
+logger.info('Loading configuration from file')
 #Reading API
 try:
                 config = ConfigParser()
@@ -23,21 +37,22 @@ try:
               
 except:
                 logger.exception('')
-print('DONE')
+logger.info('DONE')
+
 
 # Getting todays date
 dt = datetime.now()
 request_date = str(dt.year) + "-" + str(dt.month).zfill(2) + "-" + str(dt.day).zfill(2)  
-print("Generated today's date: " + str(request_date))
+logger.debug("Generated today's date: " + str(request_date))
 
 #PRINTS NASAS URL THAT IT GETS 
-print("Request url: " + str(nasa_api_url + "rest/v1/feed?start_date=" + request_date + "&end_date=" + request_date + "&api_key=" + nasa_api_key))
+logger.debug("Request url: " + str(nasa_api_url + "rest/v1/feed?start_date=" + request_date + "&end_date=" + request_date + "&api_key=" + nasa_api_key))
 r = requests.get(nasa_api_url + "rest/v1/feed?start_date=" + request_date + "&end_date=" + request_date + "&api_key=" + nasa_api_key)
 
 #PRINTS  all the things it shows (status code, headers,content) when it reads the api 
-print("Response status code: " + str(r.status_code))
-print("Response headers: " + str(r.headers))
-print("Response content: " + str(r.text))
+logger.debug("Response status code: " + str(r.status_code))
+logger.debug("Response headers: " + str(r.headers))
+logger.debug("Response content: " + str(r.text))
 
 #If status code was 200 then  if starts
 if r.status_code == 200:
@@ -50,7 +65,7 @@ if r.status_code == 200:
 	if 'element_count' in json_data:
 #Parses count to int and stores it in ast_count and then just prints it
 		ast_count = int(json_data['element_count'])
-		print("Asteroid count today: " + str(ast_count))
+		logger.info("Asteroid count today: " + str(ast_count))
 #If asteroid count was more than 0  then this if will start
 		if ast_count > 0:
 			for val in json_data['near_earth_objects'][request_date]:
@@ -97,17 +112,17 @@ if r.status_code == 200:
 							tmp_ast_close_appr_dt = "1969-12-31 23:59:59"
 #Sets the data if there isn't close approach data
 					else:
-						print("No close approach data in message")
+						logger.warning("No close approach data in message")
 						tmp_ast_close_appr_ts = 0
 						tmp_ast_close_appr_dt_utc = "1970-01-01 00:00:00"
 						tmp_ast_close_appr_dt = "1970-01-01 00:00:00"
 						tmp_ast_speed = -1
 						tmp_ast_miss_dist = -1
 #Prints the data abaout the asteroid like its name, close aproach time, speed etc.
-					print("------------------------------------------------------- >>")
-					print("Asteroid name: " + str(tmp_ast_name) + " | INFO: " + str(tmp_ast_nasa_jpl_url) + " | Diameter: " + str(tmp_ast_diam_min) + " - " + str(tmp_ast_diam_max) + " km | Hazardous: " + str(tmp_ast_hazardous))
-					print("Close approach TS: " + str(tmp_ast_close_appr_ts) + " | Date/time UTC TZ: " + str(tmp_ast_close_appr_dt_utc) + " | Local TZ: " + str(tmp_ast_close_appr_dt))
-					print("Speed: " + str(tmp_ast_speed) + " km/h" + " | MISS distance: " + str(tmp_ast_miss_dist) + " km")
+					logger.debug("------------------------------------------------------- >>")
+					logger.debug("Asteroid name: " + str(tmp_ast_name) + " | INFO: " + str(tmp_ast_nasa_jpl_url) + " | Diameter: " + str(tmp_ast_diam_min) + " - " + str(tmp_ast_diam_max) + " km | Hazardous: " + str(tmp_ast_hazardous))
+					logger.debug("Close approach TS: " + str(tmp_ast_close_appr_ts) + " | Date/time UTC TZ: " + str(tmp_ast_close_appr_dt_utc) + " | Local TZ: " + str(tmp_ast_close_appr_dt))
+					logger.debug("Speed: " + str(tmp_ast_speed) + " km/h" + " | MISS distance: " + str(tmp_ast_miss_dist) + " km")
 					
 					# Adding asteroid data to the corresponding array
 					if tmp_ast_hazardous == True:
@@ -116,23 +131,23 @@ if r.status_code == 200:
 						ast_safe.append([tmp_ast_name, tmp_ast_nasa_jpl_url, tmp_ast_diam_min, tmp_ast_diam_max, tmp_ast_close_appr_ts, tmp_ast_close_appr_dt_utc, tmp_ast_close_appr_dt, tmp_ast_speed, tmp_ast_miss_dist])
 #If there are no asteroids then prints this statement
 		else:
-			print("No asteroids are going to hit earth today")
+			logger.info("No asteroids are going to hit earth today")
 #Prints info about safe and hazardous asteroids
-	print("Hazardous asteorids: " + str(len(ast_hazardous)) + " | Safe asteroids: " + str(len(ast_safe)))
+	logger.info("Hazardous asteorids: " + str(len(ast_hazardous)) + " | Safe asteroids: " + str(len(ast_safe)))
 #If the hazardous asteroid count is not 0 then this if starts 
 	if len(ast_hazardous) > 0:
 #Sorts the array by time
 		ast_hazardous.sort(key = lambda x: x[4], reverse=False)
 #Prints possibility of asteroid impact and the asteroid info like  the time and more info 
-		print("Today's possible apocalypse (asteroid impact on earth) times:")
+		logger.info("Today's possible apocalypse (asteroid impact on earth) times:")
 		for asteroid in ast_hazardous:
-			print(str(asteroid[6]) + " " + str(asteroid[0]) + " " + " | more info: " + str(asteroid[1]))
+			logger.info(str(asteroid[6]) + " " + str(asteroid[0]) + " " + " | more info: " + str(asteroid[1]))
 #Prints the closest distance and more info 
-		ast_hazardous.sort(key = lambda x: x[8], reverse=False)
-		print("Closest passing distance is for: " + str(ast_hazardous[0][0]) + " at: " + str(int(ast_hazardous[0][8])) + " km | more info: " + str(ast_hazardous[0][1]))
+		ast_hazardous.sort(key = lambda x: x[8], reverse=False)	
+		logger.info("Closest passing distance is for: " + str(ast_hazardous[0][0]) + " at: " + str(int(ast_hazardous[0][8])) + " km | more info: " + str(ast_hazardous[0][1]))
 #If there were not any asteroids close then it just prints this statement
 	else:
-		print("No asteroids close passing earth today")
+		logger.info("No asteroids close passing earth today")
 #If there were no response from API  because of some issues then it will print the  that there were problems connecting
 else:
-	print("Unable to get response from API. Response code: " + str(r.status_code) + " | content: " + str(r.text))
+	logger.error("Unable to get response from API. Response code: " + str(r.status_code) + " | content: " + str(r.text))
