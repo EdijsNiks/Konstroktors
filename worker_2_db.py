@@ -80,8 +80,8 @@ def sort_ast_by_pass_dist(ast_arr):
 		return []
 
 def sort_ast_by_time(ast_arr):
-	ast_hazardous.sort(key = lambda x: x[4], reverse=False)
-	return ast_hazardous
+	ast_arr.sort(key = lambda x: x[4], reverse=False)
+	return ast_arr
 
 if __name__ == "__main__":
 
