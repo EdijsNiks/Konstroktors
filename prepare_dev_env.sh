@@ -24,6 +24,15 @@ else
 fi
 echo "------------------------------------------------"
 
+echo "Checking if file contains valid yaml"
+if python -c 'import yaml, sys; yaml.safe_load(sys.stdin)' < log_worker.yaml; then
+        echo "yaml exists"
+else
+        echo "Installing yaml"
+        sudo pip install yaml
+fi
+echo "--------------------------------------"
+
 echo "Checking if log_migrate_db.yaml exists in the current working dir -->"
 if test -f "log_migrate_db.yaml"; then
     echo "exists"
