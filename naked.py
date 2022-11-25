@@ -30,18 +30,18 @@ logger.info('Asteroid processing service')
 logger.info('Loading configuration from file')
 #Reading API
 try:
-                config = ConfigParser()
-                config.read('config.ini')
+        config = ConfigParser()
+        config.read('config.ini')
 
-                nasa_api_key = config.get('nasa', 'api_key')
-                nasa_api_url = config.get('nasa', 'api_url')
+        nasa_api_key = config.get('nasa', 'api_key')
+        nasa_api_url = config.get('nasa', 'api_url')
 
-		mysql_config_mysql_host = config.get('mysql_config', 'mysql_host')
-		mysql_config_mysql_db = config.get('mysql_config', 'mysql_db')
-		mysql_config_mysql_user = config.get('mysql_config', 'mysql_user')
-		mysql_config_mysql_pass = config.get('mysql_config', 'mysql_pass')
+	mysql_config_mysql_host = config.get('mysql_config', 'mysql_host')
+	mysql_config_mysql_db = config.get('mysql_config', 'mysql_db')
+	mysql_config_mysql_user = config.get('mysql_config', 'mysql_user')
+	mysql_config_mysql_pass = config.get('mysql_config', 'mysql_pass')
 except:
-                logger.exception('')
+        logger.exception('')
 logger.info('DONE')
 
 def init_db():
@@ -85,7 +85,7 @@ def mysql_insert_ast_into_db(create_date, hazardous, name, url, diam_min, diam_m
                 logger.error( "INSERT INTO `ast_daily` (`create_date`, `hazardous`, `name`, `url`, `diam_min`, `diam_max`, `ts`, `dt_>
                 logger.error('Problem inserting asteroid values into DB: ' + str(e))
                 pass
-
+#With mysql check if exists method validates the asteroid and pushes the data to db
 def push_asteroids_arrays_to_db(request_day, ast_array, hazardous):
         for asteroid in ast_array:
                 if mysql_check_if_ast_exists_in_db(request_day, asteroid[9]) == 0:
@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
 	connection = None
 	connected = False
-
+#Starts the DB so before the data is processed it is ready
 	init_db()
 
 	# Opening connection to mysql DB
