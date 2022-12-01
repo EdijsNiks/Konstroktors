@@ -1,5 +1,5 @@
 #!/bin/bash
-sec_secret_storage_loc="\Konstroktors"
+sec_secret_storage_loc="/Konstroktors"
 
 echo "Script for preparing the development environment"
 echo "------------------------------------------------"
@@ -25,13 +25,14 @@ fi
 echo "------------------------------------------------"
 
 echo "Checking if file contains valid yaml"
-if python -c 'import yaml, sys; yaml.safe_load(sys.stdin)' < log_worker.yaml; then
+if test -f 'import yaml, sys; yaml.safe_load(sys.stdin)' < log_worker.yaml; then
         echo "yaml exists"
 else
-        echo "Installing yaml"
-        sudo pip install yaml
+        echo "Something went wrong"
+        
 fi
 echo "--------------------------------------"
+
 
 echo "Checking if log_migrate_db.yaml exists in the current working dir -->"
 if test -f "log_migrate_db.yaml"; then
